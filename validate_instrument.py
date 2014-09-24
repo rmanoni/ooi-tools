@@ -266,10 +266,12 @@ def get_expected(filename):
     return_data = []
 
     for each in open(filename, 'r').read().split('\n\n'):
-        if each is not None:
-            print each
-            data = yaml.load(each)
-            log.debug('Raw data from YAML: %s', data)
+
+        print each
+        data = yaml.load(each)
+        log.debug('Raw data from YAML: %s', data)
+
+        if data is not None:
 
             stream_name = data.get('stream_name')
             log.debug('%s', stream_name)
