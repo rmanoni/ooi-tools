@@ -266,28 +266,29 @@ def get_expected(filename):
     return_data = []
 
     for each in open(filename, 'r').read().split('\n\n'):
-        print each
-        data = yaml.load(each)
-        log.debug('Raw data from YAML: %s', data)
+        if each is not None:
+            print each
+            data = yaml.load(each)
+            log.debug('Raw data from YAML: %s', data)
 
-        stream_name = data.get('stream_name')
-        log.debug('%s', stream_name)
-        timestamp = data.get('port_timestamp')
-        log.debug('%s', timestamp)
-        values = data.get('values')
-        log.debug('%s', values)
+            stream_name = data.get('stream_name')
+            log.debug('%s', stream_name)
+            timestamp = data.get('port_timestamp')
+            log.debug('%s', timestamp)
+            values = data.get('values')
+            log.debug('%s', values)
 
-        timestamp = data.get('internal_timestamp')
-        if type(timestamp) == str:
-            timestamp, millis = timestamp.split('.')
-            timestamp = time.mktime(time.strptime(timestamp + 'GMT', '%Y-%m-%dT%H:%M:%S%Z'))
-            if millis.endswith('Z'):
-                millis = millis[:-1]
-            divisor = 10 ** len(millis)
-            millis = float(millis)
-            timestamp = timestamp + millis / divisor + 2208988800l - time.timezone
-            each['internal_timestamp'] = timestamp
-        return_data.append(each)
+            timestamp = data.get('internal_timestamp')
+            if type(timestamp) == str:
+                timestamp, millis = timestamp.split('.')
+                timestamp = time.mktime(time.strptime(timestamp + 'GMT', '%Y-%m-%dT%H:%M:%S%Z'))
+                if millis.endswith('Z'):
+                    millis = millis[:-1]
+                divisor = 10 ** len(millis)
+                millis = float(millis)
+                timestamp = timestamp + millis / divisor + 2208988800l - time.timezone
+                each['internal_timestamp'] = timestamp
+            return_data.append(each)
 
     return return_data
 
