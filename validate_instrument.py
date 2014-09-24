@@ -200,55 +200,6 @@ def diff(a, b, ignore=None, rename=None):
     return failures
 
 
-def purge_edex(logfile=None):
-    log.info('Purging edex')
-    conn = qm.Connection(host=HOST, port=PORT, username=USER, password=USER)
-    conn.open()
-    conn.session().sender('purgeRequest').send(PURGE_MESSAGE)
-    conn.close()
-    watch_log_for('Purge Operation: PURGE_ALL_DATA completed', logfile=logfile)
-
-
-def copy_file(resource, endpoint, test_file):
-    log.info('copy test file %s into endpoint %s from %s', test_file, endpoint, resource)
-    source_file = os.path.join(drivers_dir, resource, test_file)
-    destination_file = os.path.join(ingest_dir, endpoint, str(uuid.uuid4()))
-    shutil.copy(source_file, destination_file)
-
-
-def find_latest_log():
-    todayglob = time.strftime('edex-ooi-%Y%m%d.log*', time.localtime())
-    files = glob.glob(os.path.join(log_dir, todayglob))
-    files = [(os.stat(f).st_mtime, f) for f in files if not f.endswith('lck')]
-    files.sort()
-    fh = open(files[-1][1], 'r')
-    fh.seek(0, 2)
-    return fh
-
-
-def watch_log_for(expected_string, logfile=None, expected_count=1, timeout=60):
-    if logfile is None:
-        logfile = find_latest_log()
-    log.debug('waiting for %s in logfile: %s', expected_string, logfile.name)
-
-    endtime = time.time() + timeout
-    count = 0
-    while time.time() < endtime:
-        data = logfile.read()
-        for line in data.split('\n'):
-            if expected_string in line:
-                count += 1
-                log.debug('Found expected string %d times of %d', count, expected_count)
-                if count == expected_count:
-                    return
-        time.sleep(.1)
-    raise Exception('timeout waiting for log output')
-
-
-def wait_for_ingest_complete():
-    watch_log_for('Ingest: EDEX: Ingest')
-
-
 def test_results(expected):
     retrieved = get_from_edex()
     log.debug('Retrieved %d records from edex:', len(retrieved))
@@ -270,6 +221,10 @@ def get_expected(filename):
         data = yaml.load(each)
         if data is not None:
 
+
+
+            #todo - need to parse data into a structure that may be easier to compare with the edex data
+
             return_data.append(data)
 
     return return_data
@@ -283,9 +238,9 @@ def test(file_name):
     print expected
     time.sleep(1)
     #TODO HOW TO GET INSTRUMENT NAME??? (PARTICLE NAME)
-    #NEED TO HANDLE DIFF STREAMS FROM DIFF DRIVERS
-    #test_results(expected)
+    test_results(expected)
 
+    #TODO - SHOULD BE ABLE TO KEEP THIS
     #
     # print('\n------------------------------------------------TEST RESULTS------------------------------------------------')
     #
