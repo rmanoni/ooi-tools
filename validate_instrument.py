@@ -120,11 +120,12 @@ def compare(stored, expected):
     :return: list of failures
     """
 
-    #TODO - NEED TO UPDATE FOR INSTRUMENT
     failures = []
     for record in expected:
-        timestamp = record.get('internal_timestamp')
-        stream_name = record.get('particle_type')
+
+        preferred_timestamp = record.get('preferred_timestamp')
+        timestamp = record.get(preferred_timestamp)
+        stream_name = record.get('stream_name')
         # Not all YAML files contain the particle type
         # if we don't find it, let's check the stored data
         # if all particles are the same type, then we'll proceed
@@ -264,46 +265,27 @@ def get_expected(filename):
     :return: list of records containing the expected results
     """
     return_data = []
-
     for each in open(filename, 'r').read().split('\n\n'):
 
-        print each
         data = yaml.load(each)
-        log.debug('Raw data from YAML: %s', data)
-
         if data is not None:
 
-            stream_name = data.get('stream_name')
-            log.debug('%s', stream_name)
-            timestamp = data.get('port_timestamp')
-            log.debug('%s', timestamp)
-            values = data.get('values')
-            log.debug('%s', values)
-
-            timestamp = data.get('internal_timestamp')
-            if type(timestamp) == str:
-                timestamp, millis = timestamp.split('.')
-                timestamp = time.mktime(time.strptime(timestamp + 'GMT', '%Y-%m-%dT%H:%M:%S%Z'))
-                if millis.endswith('Z'):
-                    millis = millis[:-1]
-                divisor = 10 ** len(millis)
-                millis = float(millis)
-                timestamp = timestamp + millis / divisor + 2208988800l - time.timezone
-                each['internal_timestamp'] = timestamp
-            return_data.append(each)
+            return_data.append(data)
 
     return return_data
- 
+
 
 def test(file_name):
 
     scorecard = {}
     log.debug('Processing test case: %s', file_name)
     expected = get_expected(file_name)
+    print expected
     time.sleep(1)
-    # #TODO HOW TO GET INSTRUMENT NAME??? (PARTICLE NAME)
-    # #NEED TO HANDLE DIFF STREAMS FROM DIFF DRIVERS
-    # scorecard[instrument] = test_results(expected)
+    #TODO HOW TO GET INSTRUMENT NAME??? (PARTICLE NAME)
+    #NEED TO HANDLE DIFF STREAMS FROM DIFF DRIVERS
+    #test_results(expected)
+
     #
     # print('\n------------------------------------------------TEST RESULTS------------------------------------------------')
     #
